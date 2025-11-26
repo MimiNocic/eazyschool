@@ -5,6 +5,10 @@ import com.eng.it.eazybytes.eazyschool.model.Contact;
 import com.eng.it.eazybytes.eazyschool.repository.ContactRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -57,17 +61,29 @@ public class ContactService {
         if(result>0) {
             isUpdated = true;
         }*/
-        Optional<Contact> contact = contactRepository.findById(contactId);
+        /*Optional<Contact> contact = contactRepository.findById(contactId);
         contact.ifPresent(contact1 -> {
             contact1.setStatus(EazySchoolConstants.CLOSE);
             //contact1.setUpdatedBy(updatedBy);
             //contact1.setUpdatedAt(LocalDateTime.now());
-        });
-        Contact updatedContact = contactRepository.save(contact.get());
-        if(null != updatedContact && updatedContact.getUpdatedBy()!=null){
+        });*/
+        //Contact updatedContact = contactRepository.save(contact.get());
+        /*if(null != updatedContact && updatedContact.getUpdatedBy()!=null){
+            isUpdated=true;
+        }*/
+
+        int rows = contactRepository.updateMsgStatusNative(EazySchoolConstants.CLOSE, contactId);
+        if(rows > 0){
             isUpdated=true;
         }
         return isUpdated;
+    }
+
+    public Page<Contact> findMsgsWithOpenStatus(int pageNum, String sortField, String sortDir){
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, sortDir.equals("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending());
+        Page<Contact> msgPage = contactRepository.findByStatus(EazySchoolConstants.OPEN, pageable);
+        return msgPage;
     }
 
     /*public int getCounter() {
